@@ -1,0 +1,3 @@
+bool stop               # flag to stop an ongoing calibration
+---
+bool output             # error indicator
