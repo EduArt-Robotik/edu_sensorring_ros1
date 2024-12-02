@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "sensorring");
     
     // Create SensorRing Node
-    auto measurement_node = std::make_shared<sensorring::SensorRingProxy>("sensorring");
+    auto measurement_node = std::make_shared<sensorring::SensorRingProxy>("edu_sensorring_ros1");
     ROS_INFO("Starting the sensorring node");
 
     std::string tf_name;

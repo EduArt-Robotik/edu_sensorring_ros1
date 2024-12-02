@@ -1,12 +1,12 @@
 <launch>
     <!-- Load Parameters -->
-    <rosparam file="$(find sensorring_ros1)/params/edu_bot_sensorring_params.yaml" command="load" />
+    <rosparam file="$(find edu_sensorring_ros1)/params/edu_bot_sensorring_params.yaml" command="load" />
 
     <!-- SensorRing Node -->
     <node
-        pkg="sensorring_ros1"
-        type="sensorring_ros1_node"
-        name="sensorring_ros1_node"
+        pkg="edu_sensorring_ros1"
+        type="edu_sensorring_ros1_node"
+        name="edu_sensorring_ros1_node"
         output="screen">
     </node>
 

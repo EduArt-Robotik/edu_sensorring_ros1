@@ -8,8 +8,8 @@ pointcloud_sensor:
     auto_min_max: true
     use_eeprom_file: true
     use_calibration_file: true
-    eeprom_file_dir: "/home/pi/ros2_ws/src/sensorring_ros2/calibration"
-    calibration_file_dir: "/home/pi/ros2_ws/src/sensorring_ros2/calibration"
+    eeprom_file_dir: ".eduart/sensorring/calibration"
+    calibration_file_dir: ".eduart/sensorring/eeprom"
     scale_t_min_deg: 20.0
     scale_t_max_deg: 35.0
   topology:
