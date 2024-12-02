@@ -13,8 +13,8 @@ int main(int argc, char** argv) {
     ROS_INFO("Starting the sensorring node");
 
     std::string tf_name;
-    ring::RingParams ring_params;
-    manager::ManagerParams manager_params;
+    eduart::ring::RingParams ring_params;
+    eduart::manager::ManagerParams manager_params;
 
     // Get SensorRing parameters
     int timeout_ms = 0;
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     // Get parameters for every CAN interface
     param_namespace += "/topology/can_interfaces";
     for (int i = 0; i < nr_of_can_interfaces; i++) {
-        bus::BusParams bus_params;
+        eduart::bus::BusParams bus_params;
 
         std::string interface_param_name = "/can_interface_" + std::to_string(i);
         measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/interface_name", bus_params.interface_name, std::string("can0"));
@@ -58,24 +58,27 @@ int main(int argc, char** argv) {
         int nr_of_sensors;
         measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/nr_of_sensors", nr_of_sensors, 1);
 
-        sensor::SensorOrientation orientation = sensor::SensorOrientation::none;
-        if (orientation_str == "left") orientation = sensor::SensorOrientation::left;
-        if (orientation_str == "right") orientation = sensor::SensorOrientation::right;
+        eduart::sensor::Orientation orientation         = eduart::sensor::Orientation::none;
+        if (orientation_str == "left") orientation      = eduart::sensor::Orientation::left;
+        if (orientation_str == "right") orientation     = eduart::sensor::Orientation::right;
 
         // Get parameters for every sensor on the current CAN interface
         interface_param_name += "/sensors";
         for (int j = 0; j < nr_of_sensors; j++) {
             std::string sensor_param_name = "/sensor_" + std::to_string(j);
 
-            bool enable_tof, enable_thermal;
-            measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/get_tof", enable_tof, true);
-            measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/get_thermal", enable_thermal, false);
+            bool enable_tof, enable_thermal, enable_light;
+            measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/enable_tof", enable_tof, true);
+            measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/enable_thermal", enable_thermal, false);
+            measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/enable_light", enable_light, false);
 
             std::vector<double> rotation(3, 0.0), translation(3, 0.0);
             measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/rotation", rotation, rotation);
             measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/translation", translation, translation);
 
-            sensor::TofSensorParams tof_params;
+            eduart::sensor::TofSensorParams tof_params;
+            tof_params.enable = enable_tof;
+            
             if (rotation.size() == 3) {
                 std::copy(rotation.begin(), rotation.end(), tof_params.rotation.data.begin());
             } else {
@@ -89,7 +92,8 @@ int main(int argc, char** argv) {
                                 << bus_params.interface_name << " has wrong length!");
             }
 
-            sensor::ThermalSensorParams thermal_params;
+            eduart::sensor::ThermalSensorParams thermal_params;
+            thermal_params.enable = enable_thermal;
             thermal_params.rotation = tof_params.rotation;
             thermal_params.translation = tof_params.translation;
             thermal_params.orientation = orientation;
@@ -101,14 +105,12 @@ int main(int argc, char** argv) {
             thermal_params.t_min_deg_c = thermal_t_min;
             thermal_params.t_max_deg_c = thermal_t_max;
 
-            sensor::LightParams led_params;
+            eduart::sensor::LightParams led_params;
+            led_params.enable = enable_light;
             led_params.orientation = orientation;
 
             // Create sensor board
-            sensor::SensorBoardParams board_params;
-            board_params.idx = j;
-            board_params.enable_tof = enable_tof;
-            board_params.enable_thermal = enable_thermal;
+            eduart::sensor::SensorBoardParams board_params;
             board_params.tof_params = tof_params;
             board_params.thermal_params = thermal_params;
             board_params.led_params = led_params;

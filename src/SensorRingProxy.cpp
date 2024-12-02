@@ -20,8 +20,8 @@ ros::NodeHandle* SensorRingProxy::getNodeHandle(){
     return &_nh;
 }
 
-bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_name) {
-    _manager = std::make_unique<manager::MeasurementManager>(params, static_cast<MeasurementObserver*>(this));
+bool SensorRingProxy::run(eduart::manager::ManagerParams params, const std::string& tf_name) {
+    _manager = std::make_unique<eduart::manager::MeasurementManager>(params, static_cast<MeasurementObserver*>(this));
 
     // Prepare PointCloud2 message
     _pc2_msg = sensor_msgs::PointCloud2();
@@ -62,7 +62,7 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
     int i = 0;
     for (const auto& sensor_bus : _manager->getParams().ring_params.bus_param_vec) {
         for (const auto& sensor_board : sensor_bus.board_param_vec) {
-            if (sensor_board.enable_thermal) {
+            if (sensor_board.thermal_params.enable) {
                 // =================== Temperature image ===================
                 std::string sensor_name = "thermal_sensor_" + std::to_string(i) + "/grayscale";
 
@@ -151,19 +151,19 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
     return static_cast<int>(success);
 }
 
-void SensorRingProxy::onStateChange(const WorkerState state) {
+void SensorRingProxy::onStateChange(const eduart::manager::WorkerState state) {
     switch (state) {
-        case WorkerState::Initialized:
+        case eduart::manager::WorkerState::Initialized:
             ROS_DEBUG("New MeasurementManager state: initialized");
             break;
-        case WorkerState::Running:
+        case eduart::manager::WorkerState::Running:
             ROS_DEBUG("New MeasurementManager state: running");
             break;
-        case WorkerState::Shutdown:
+        case eduart::manager::WorkerState::Shutdown:
             ROS_INFO("New MeasurementManager state: shutdown");
             _shutdown = true;
             break;
-        case WorkerState::Error:
+        case eduart::manager::WorkerState::Error:
             ROS_ERROR("New MeasurementManager state: error");
             _shutdown = true;
             break;
@@ -174,7 +174,7 @@ bool SensorRingProxy::isShutdown() {
     return _shutdown;
 }
 
-void SensorRingProxy::onTofMeasurement(const measurement::TofMeasurement measurement) {
+void SensorRingProxy::onTofMeasurement(const eduart::measurement::TofMeasurement measurement) {
     if (measurement.size > 0) {
         _pc2_msg.header.stamp = ros::Time::now();
         _pc2_msg.width = measurement.size;
@@ -194,24 +194,24 @@ void SensorRingProxy::onTofMeasurement(const measurement::TofMeasurement measure
     }
 }
 
-void SensorRingProxy::onOutputLog(const LogVerbosity verbosity, const std::string msg){
+void SensorRingProxy::onOutputLog(const eduart::logger::LogVerbosity verbosity, const std::string msg){
     switch (verbosity) {
-        case LogVerbosity::Debug:
+        case eduart::logger::LogVerbosity::Debug:
             ROS_DEBUG("%s", msg.c_str());
             break;
-        case LogVerbosity::Info:
+        case eduart::logger::LogVerbosity::Info:
             ROS_INFO("%s", msg.c_str());
             break;
-        case LogVerbosity::Warning:
+        case eduart::logger::LogVerbosity::Warning:
             ROS_WARN("%s", msg.c_str());
             break;
-        case LogVerbosity::Error:
+        case eduart::logger::LogVerbosity::Error:
             ROS_ERROR("%s", msg.c_str());
             break;
     }
 }
 
-void SensorRingProxy::onThermalMeasurement(const std::size_t idx, const measurement::ThermalMeasurement measurement) {
+void SensorRingProxy::onThermalMeasurement(const std::size_t idx, const eduart::measurement::ThermalMeasurement measurement) {
     // Prepare and publish grayscale image
     auto& img_msg = _img_msg_vec.at(idx);
     size_t size = img_msg.width * img_msg.height;

@@ -21,33 +21,39 @@ pointcloud_sensor:
         nr_of_sensors: 6
         sensors:
           sensor_0:
-            get_tof: true
-            get_thermal: true # true
+            enable_tof: true
+            enable_thermal: true # true
+            enable_light: true
             rotation: [-90.0, -19.7, -110.0]
             translation: [0.183, -0.066, 0.044]
           sensor_1:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, 35.0]
             translation: [0.045, -0.106, 0.106]
           sensor_2:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, -35.0]
             translation: [0.000, -0.106, 0.106]
           sensor_3:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [90.000, 0.0, 0.0]
             translation: [0.023, -0.108, 0.072]
           sensor_4:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [0.0, 90.0, 200.0]
             translation: [-0.180, -0.066, 0.052]
           sensor_5:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, -90.0]
             translation: [-0.180, 0.000, 0.082]
 
@@ -57,32 +63,38 @@ pointcloud_sensor:
         nr_of_sensors: 6
         sensors:
           sensor_0:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, 90.0]
             translation: [0.175, 0.000, 0.081]
           sensor_1:
-            get_tof: true
-            get_thermal: true # true
+            enable_tof: true
+            enable_thermal: true # true
+            enable_light: true
             rotation: [90.000, -19.7, 110.0]
             translation: [0.183, 0.066, 0.044]
           sensor_2:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, 145.0]
             translation: [0.045, 0.106, 0.106]
           sensor_3:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [81.563, 0.0, 215.0]
             translation: [0.000, 0.106, 0.106]
           sensor_4:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [90.000, 0.0, 180.0]
             translation: [0.023, 0.108, 0.072]
           sensor_5:
-            get_tof: true
-            get_thermal: false
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
             rotation: [0.0, -90.0, -20.0]
             translation: [-0.180, 0.066, 0.052]
