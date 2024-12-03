@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Setup ROS 1 environment
+source /opt/ros/noetic/setup.bash
+source /home/user/ros/devel/setup.bash
+exec "$@"

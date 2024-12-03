@@ -1,0 +1,100 @@
+pointcloud_sensor:
+  base_setup:
+    tf_name: "base_sensorring"
+    print_topology: false
+    frequency_tof_hz: 0.0 # max frequency ~ 13.6...14.1 Hz (0.0 -> free running)
+    frequency_thermal_hz: 5.0 # max frequency ~ 5.0 Hz
+  thermal_config:
+    auto_min_max: true
+    use_eeprom_file: true
+    use_calibration_file: true
+    eeprom_file_dir: "/home/user/.eduart/sensorring/eeprom"
+    calibration_file_dir: "/home/user/.eduart/sensorring/calibration"
+    scale_t_min_deg: 20.0
+    scale_t_max_deg: 35.0
+  topology:
+    nr_of_interfaces: 2
+    can_interfaces:
+      can_interface_0:
+        interface_name: "eduart-can0"
+        orientation: "right"
+        nr_of_sensors: 6
+        sensors:
+          sensor_0:
+            enable_tof: true
+            enable_thermal: true # true
+            enable_light: true
+            rotation: [-90.0, -19.7, -110.0]
+            translation: [0.183, -0.066, 0.044]
+          sensor_1:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, 35.0]
+            translation: [0.045, -0.106, 0.106]
+          sensor_2:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, -35.0]
+            translation: [0.000, -0.106, 0.106]
+          sensor_3:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [90.000, 0.0, 0.0]
+            translation: [0.023, -0.108, 0.072]
+          sensor_4:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [0.0, 90.0, 200.0]
+            translation: [-0.180, -0.066, 0.052]
+          sensor_5:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, -90.0]
+            translation: [-0.180, 0.000, 0.082]
+
+      can_interface_1:
+        interface_name: "eduart-can1"
+        orientation: "left"
+        nr_of_sensors: 6
+        sensors:
+          sensor_0:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, 90.0]
+            translation: [0.175, 0.000, 0.081]
+          sensor_1:
+            enable_tof: true
+            enable_thermal: true # true
+            enable_light: true
+            rotation: [90.000, -19.7, 110.0]
+            translation: [0.183, 0.066, 0.044]
+          sensor_2:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, 145.0]
+            translation: [0.045, 0.106, 0.106]
+          sensor_3:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [81.563, 0.0, 215.0]
+            translation: [0.000, 0.106, 0.106]
+          sensor_4:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [90.000, 0.0, 180.0]
+            translation: [0.023, 0.108, 0.072]
+          sensor_5:
+            enable_tof: true
+            enable_thermal: false
+            enable_light: true
+            rotation: [0.0, -90.0, -20.0]
+            translation: [-0.180, 0.066, 0.052]
