@@ -4,8 +4,8 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <sensorring/MeasurementManager.hpp>
-#include <sensorring_ros1/StartThermalCalibration.h>
-#include <sensorring_ros1/StopThermalCalibration.h>
+#include <edu_sensorring_ros1/StartThermalCalibration.h>
+#include <edu_sensorring_ros1/StopThermalCalibration.h>
 
 #include <vector>
 #include <memory>
@@ -35,11 +35,11 @@ namespace sensorring {
 
     private:
 
-        bool stopThermalCalibration(sensorring_ros1::StopThermalCalibration::Request& request,
-                                    sensorring_ros1::StopThermalCalibration::Response& response);
+        bool stopThermalCalibration(edu_sensorring_ros1::StopThermalCalibration::Request& request,
+                                    edu_sensorring_ros1::StopThermalCalibration::Response& response);
 
-        bool startThermalCalibration(sensorring_ros1::StartThermalCalibration::Request& request,
-                                     sensorring_ros1::StartThermalCalibration::Response& response);
+        bool startThermalCalibration(edu_sensorring_ros1::StartThermalCalibration::Request& request,
+                                     edu_sensorring_ros1::StartThermalCalibration::Response& response);
 
         bool _shutdown;
         std::unique_ptr<eduart::manager::MeasurementManager> _manager;

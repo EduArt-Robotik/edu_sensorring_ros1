@@ -195,7 +195,7 @@ install(TARGETS ${PROJECT_NAME}_node
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-  launch/sensorring_ros1.launch
+  launch/edu_sensorring_ros1.launch
   params/edu_bot_sensorring_params.yaml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

@@ -231,8 +231,8 @@ void SensorRingProxy::onThermalMeasurement(const std::size_t idx, const eduart::
     _colorimg_pub_vec[idx].publish(colorimg_msg);
 }
 
-bool SensorRingProxy::stopThermalCalibration(sensorring_ros1::StopThermalCalibration::Request& request,
-                                             sensorring_ros1::StopThermalCalibration::Response& response) {
+bool SensorRingProxy::stopThermalCalibration(edu_sensorring_ros1::StopThermalCalibration::Request& request,
+                                             edu_sensorring_ros1::StopThermalCalibration::Response& response) {
     if (request.stop) {
         response.output = _manager->stopThermalCalibration();
     } else {
@@ -241,8 +241,8 @@ bool SensorRingProxy::stopThermalCalibration(sensorring_ros1::StopThermalCalibra
     return true;
 }
 
-bool SensorRingProxy::startThermalCalibration(sensorring_ros1::StartThermalCalibration::Request& request,
-                                              sensorring_ros1::StartThermalCalibration::Response& response) {
+bool SensorRingProxy::startThermalCalibration(edu_sensorring_ros1::StartThermalCalibration::Request& request,
+                                              edu_sensorring_ros1::StartThermalCalibration::Response& response) {
     response.output = _manager->startThermalCalibration(static_cast<std::size_t>(request.window));
     return true;
 }
