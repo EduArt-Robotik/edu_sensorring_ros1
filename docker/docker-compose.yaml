@@ -12,8 +12,8 @@ services:
         mem_limit: 1000mb
         environment:
             - EDU_ROBOT_NAMESPACE=${EDU_ROBOT_NAMESPACE}
-            - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}
-            - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+            - ROS_MASTER_URI=${ROS_MASTER_URI}
+            - ROS_IP=${ROS_IP}
         network_mode: "host"
         command: bash -c 'cd /home/user/ros/launch_content; roslaunch edu_sensorring_ros1.launch'
         # command: /bin/bash

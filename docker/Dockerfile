@@ -1,10 +1,7 @@
 FROM arm64v8/ros:noetic-ros-base-focal
 
-
 ENV USER=user
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ROS_MASTER_URI "http://192.168.178.43:11311/"
-ENV ROS_IP "192.168.178.43"
 
 # install packages
 USER root
