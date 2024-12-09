@@ -3,7 +3,7 @@ services:
         build:
           context: ../../
           dockerfile: ./edu_sensorring_ros1/docker/Dockerfile
-        container_name: edu_sensorring_ros1-0.1.0
+        container_name: edu_sensorring_ros1-1.0.0
         user: user
         restart: always
         privileged: true

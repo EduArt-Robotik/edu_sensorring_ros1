@@ -1,7 +1,27 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(edu_sensorring_ros1)
 
-## Compile as C++11, supported in ROS Kinetic and newer
+#########################################################
+# build type (has to be done before project() call)
+IF(DEFINED CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+ELSE()
+   SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
+
+#########################################################
+# project
+set(CMAKE_PROJECT_VERSION_MAJOR 1)
+set(CMAKE_PROJECT_VERSION_MINOR 0)
+set(CMAKE_PROJECT_VERSION_PATCH 0)
+set(CMAKE_PROJECT_VERSION "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}")
+
+project(edu_sensorring_ros1
+  LANGUAGES CXX
+  VERSION ${CMAKE_PROJECT_VERSION}
+  HOMEPAGE_URL "https://github.com/EduArt-Robotik/edu_sensorring_ros1"
+)
+
+## Compile as C++17
 add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
@@ -16,7 +36,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # Sensorring is no catkin package. Adding it to "find_package(catkin REQUIRED COMPONENTS ..." above doesn't work.
-find_package(sensorring REQUIRED)
+find_package(sensorring 1.0.0 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
