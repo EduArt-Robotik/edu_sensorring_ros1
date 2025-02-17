@@ -1,0 +1,21 @@
+<launch>
+    <!-- Load Parameters -->
+    <rosparam file="$(find edu_sensorring_ros1)/params/usb_sensorring_params.yaml" command="load" />
+
+    <!-- SensorRing Node -->
+    <node
+        pkg="edu_sensorring_ros1"
+        type="edu_sensorring_ros1_node"
+        name="edu_sensorring_ros1_node"
+        output="screen">
+    </node>
+
+    <!-- Static Transform Publisher: base_link to base_sensorring -->
+    <node
+        pkg="tf2_ros"
+        type="static_transform_publisher"
+        name="base_link_to_base_tof"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 base_link base_sensorring 100"
+        output="screen">
+    </node>
+</launch>

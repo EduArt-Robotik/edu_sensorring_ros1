@@ -52,11 +52,21 @@ int main(int argc, char** argv) {
         eduart::bus::BusParams bus_params;
 
         std::string interface_param_name = "/can_interface_" + std::to_string(i);
-        measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/interface_name", bus_params.interface_name, std::string("can0"));
+        std::string interface_type_str;
         std::string orientation_str;
-        measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/orientation", orientation_str, std::string("none"));
         int nr_of_sensors;
+        measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/interface_type", interface_type_str, std::string("undefined"));
+        measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/interface_name", bus_params.interface_name, std::string("can0"));
+        measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/orientation", orientation_str, std::string("none"));
         measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/nr_of_sensors", nr_of_sensors, 1);
+
+        if(interface_type_str == "socketcan"){
+			bus_params.type = eduart::com::DeviceType::SOCKETCAN;
+		}else if(interface_type_str == "usbtingo"){
+			bus_params.type = eduart::com::DeviceType::USBTINGO;
+		}else{
+			bus_params.type = eduart::com::DeviceType::UNDEFINED;
+		}
 
         eduart::sensor::Orientation orientation         = eduart::sensor::Orientation::none;
         if (orientation_str == "left") orientation      = eduart::sensor::Orientation::left;
