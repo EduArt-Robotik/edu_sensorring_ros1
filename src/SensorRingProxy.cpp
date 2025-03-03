@@ -51,17 +51,17 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
     field_z.datatype = sensor_msgs::PointField::FLOAT32;
     field_z.count = 1;
 
-	sensor_msgs::PointField field_dist;
-	field_dist.name = "raw_distance";
-	field_dist.offset = 12;
-	field_dist.datatype = sensor_msgs::PointField::FLOAT32;
-	field_dist.count = 1;
-
 	sensor_msgs::PointField field_sigma;
 	field_sigma.name = "sigma";
 	field_sigma.offset = 16;
 	field_sigma.datatype = sensor_msgs::PointField::FLOAT32;
 	field_sigma.count = 1;
+
+	sensor_msgs::PointField field_dist;
+	field_dist.name = "raw_distance";
+	field_dist.offset = 12;
+	field_dist.datatype = sensor_msgs::PointField::FLOAT32;
+	field_dist.count = 1;
 
 	sensor_msgs::PointField field_idx;
 	field_idx.name = "sensor_idx";
@@ -69,7 +69,7 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
 	field_idx.datatype = sensor_msgs::PointField::INT32;
 	field_idx.count = 1;
 
-    pc2_msg.fields = {field_x, field_y, field_z, field_dist, field_sigma, field_idx};
+    pc2_msg.fields = {field_x, field_y, field_z, field_sigma, field_dist, field_idx};
 
 	_pc2_msg_raw = pc2_msg;
 	_pc2_msg_transformed = pc2_msg;
