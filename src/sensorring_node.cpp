@@ -5,6 +5,8 @@
 #include <chrono>
 #include "SensorRingProxy.hpp"
 
+using namespace eduart;
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "sensorring");
     
@@ -13,8 +15,8 @@ int main(int argc, char** argv) {
     ROS_INFO("Starting the sensorring node");
 
     std::string tf_name;
-    eduart::ring::RingParams ring_params;
-    eduart::manager::ManagerParams manager_params;
+    ring::RingParams ring_params;
+    manager::ManagerParams manager_params;
 
     // Get SensorRing parameters
     int timeout_ms = 0;
@@ -48,8 +50,10 @@ int main(int argc, char** argv) {
 
     // Get parameters for every CAN interface
     param_namespace += "/topology/can_interfaces";
+    int sensor_idx = 0;
     for (int i = 0; i < nr_of_can_interfaces; i++) {
-        eduart::bus::BusParams bus_params;
+
+        bus::BusParams bus_params;
 
         std::string interface_param_name = "/can_interface_" + std::to_string(i);
         std::string interface_type_str;
@@ -61,16 +65,16 @@ int main(int argc, char** argv) {
         measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + "/nr_of_sensors", nr_of_sensors, 1);
 
         if(interface_type_str == "socketcan"){
-			bus_params.type = eduart::com::DeviceType::SOCKETCAN;
+			bus_params.type = com::DeviceType::SOCKETCAN;
 		}else if(interface_type_str == "usbtingo"){
-			bus_params.type = eduart::com::DeviceType::USBTINGO;
+			bus_params.type = com::DeviceType::USBTINGO;
 		}else{
-			bus_params.type = eduart::com::DeviceType::UNDEFINED;
+			bus_params.type = com::DeviceType::UNDEFINED;
 		}
 
-        eduart::sensor::Orientation orientation         = eduart::sensor::Orientation::none;
-        if (orientation_str == "left") orientation      = eduart::sensor::Orientation::left;
-        if (orientation_str == "right") orientation     = eduart::sensor::Orientation::right;
+        sensor::Orientation orientation         = sensor::Orientation::none;
+        if (orientation_str == "left") orientation      = sensor::Orientation::left;
+        if (orientation_str == "right") orientation     = sensor::Orientation::right;
 
         // Get parameters for every sensor on the current CAN interface
         interface_param_name += "/sensors";
@@ -86,8 +90,9 @@ int main(int argc, char** argv) {
             measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/rotation", rotation, rotation);
             measurement_node->getNodeHandle()->param(param_namespace + interface_param_name + sensor_param_name + "/translation", translation, translation);
 
-            eduart::sensor::TofSensorParams tof_params;
-            tof_params.enable = enable_tof;
+			sensor::TofSensorParams tof_params;
+			tof_params.enable		= enable_tof;
+			tof_params.user_idx		= sensor_idx;
             
             if (rotation.size() == 3) {
                 std::copy(rotation.begin(), rotation.end(), tof_params.rotation.data.begin());
@@ -102,30 +107,32 @@ int main(int argc, char** argv) {
                                 << bus_params.interface_name << " has wrong length!");
             }
 
-            eduart::sensor::ThermalSensorParams thermal_params;
-            thermal_params.enable = enable_thermal;
-            thermal_params.rotation = tof_params.rotation;
-            thermal_params.translation = tof_params.translation;
-            thermal_params.orientation = orientation;
-            thermal_params.auto_min_max = thermal_auto_min_max;
-            thermal_params.use_eeprom_file = thermal_use_eeprom_file;
+            sensor::ThermalSensorParams thermal_params;
+            thermal_params.enable               = enable_thermal;
+            thermal_params.user_idx				= sensor_idx;
+            thermal_params.rotation             = tof_params.rotation;
+            thermal_params.translation          = tof_params.translation;
+            thermal_params.orientation          = orientation;
+            thermal_params.auto_min_max         = thermal_auto_min_max;
+            thermal_params.use_eeprom_file      = thermal_use_eeprom_file;
             thermal_params.use_calibration_file = thermal_use_calibration_file;
-            thermal_params.eeprom_dir = thermal_eeprom_dir;
-            thermal_params.calibration_dir = thermal_calibration_dir;
-            thermal_params.t_min_deg_c = thermal_t_min;
-            thermal_params.t_max_deg_c = thermal_t_max;
+            thermal_params.eeprom_dir           = thermal_eeprom_dir;
+            thermal_params.calibration_dir      = thermal_calibration_dir;
+            thermal_params.t_min_deg_c          = thermal_t_min;
+            thermal_params.t_max_deg_c          = thermal_t_max;
 
-            eduart::sensor::LightParams led_params;
+            sensor::LightParams led_params;
             led_params.enable = enable_light;
             led_params.orientation = orientation;
 
             // Create sensor board
-            eduart::sensor::SensorBoardParams board_params;
+            sensor::SensorBoardParams board_params;
             board_params.tof_params = tof_params;
             board_params.thermal_params = thermal_params;
             board_params.led_params = led_params;
 
             bus_params.board_param_vec.push_back(board_params);
+            sensor_idx++;
         }
         ring_params.bus_param_vec.push_back(bus_params);
     }

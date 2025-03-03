@@ -4,6 +4,7 @@ pointcloud_sensor:
     print_topology: false
     frequency_tof_hz: 0.0 # max frequency ~ 13.6...14.1 Hz (0.0 -> free running)
     frequency_thermal_hz: 5.0 # max frequency ~ 5.0 Hz
+    timeout_ms: 1000
   thermal_config:
     auto_min_max: true
     use_eeprom_file: true
@@ -16,7 +17,8 @@ pointcloud_sensor:
     nr_of_interfaces: 2
     can_interfaces:
       can_interface_0:
-        interface_name: "eduart-can0"
+        interface_type: "socketcan"
+        interface_name: "eduart-can1"
         orientation: "right"
         nr_of_sensors: 6
         sensors:
@@ -58,7 +60,7 @@ pointcloud_sensor:
             translation: [-0.180, 0.000, 0.082]
 
       can_interface_1:
-        interface_name: "eduart-can1"
+        interface_name: "eduart-can0"
         orientation: "left"
         nr_of_sensors: 6
         sensors:
