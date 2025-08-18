@@ -13,6 +13,9 @@ pointcloud_sensor:
     calibration_file_dir: ".eduart/sensorring/calibration"
     scale_t_min_deg: 20.0
     scale_t_max_deg: 35.0
+  led_config:
+    initial_mode: 9 #		Off = 0, Dimmed = 1, HighBeam = 2, FlashAll = 3, FlashLeft = 4, FlashRight = 5, Pulsation = 6, Rotation = 7, Running = 8, MapDistance = 9
+    initial_color: [64, 64, 64]
   topology:
     nr_of_interfaces: 2
     can_interfaces:

@@ -23,7 +23,8 @@ namespace sensorring {
 
         ros::NodeHandle* getNodeHandle();
 
-        bool run(manager::ManagerParams params, const std::string& tf_name);
+        //bool run(manager::ManagerParams params, const std::string& tf_name);
+        bool run(manager::ManagerParams params, const std::string& tf_name, light::LightMode initial_light_mode = light::LightMode::Off, std::uint8_t red = 0, std::uint8_t green = 0, std::uint8_t blue = 0);
 
         bool isShutdown();
 
