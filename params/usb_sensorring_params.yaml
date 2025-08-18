@@ -26,14 +26,16 @@ pointcloud_sensor:
             enable_tof: true
             enable_thermal: false # true
             enable_light : true
-            rotation: [-90.0, -19.7, -110.0]
-            translation: [0.183, -0.066, 0.044]
+            rotation: [0.0, 0.7, -90.0]
+            translation: [0.1, 0.0, 0.0]
+            #rotation: [-90.0, -19.7, -110.0]
+            #translation: [0.183, -0.066, 0.044]
           sensor_1:
             enable_tof: true
             enable_thermal: false
             enable_light : true
-            rotation: [81.563, 0.0, 35.0]
-            translation: [0.045, -0.106, 0.106]
+            rotation: [0.0, 0.0, -90.0]
+            translation: [0.177, 0.0, 0.0]
           sensor_2:
             enable_tof: true
             enable_thermal: false

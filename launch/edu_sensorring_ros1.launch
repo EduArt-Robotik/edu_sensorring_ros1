@@ -7,7 +7,8 @@
         pkg="edu_sensorring_ros1"
         type="edu_sensorring_ros1_node"
         name="edu_sensorring_ros1_node"
-        output="screen">
+        required="true"
+        output="screen" >
     </node>
 
     <!-- Static Transform Publisher: base_link to base_sensorring -->

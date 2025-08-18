@@ -8,7 +8,8 @@
         type="edu_sensorring_ros1_node"
         name="edu_sensorring_ros1_node"
         required="true"
-        output="screen" >    
+        output="screen"
+        launch-prefix="gdbserver localhost:3000" >    
     </node>
 
     <!-- Static Transform Publisher: base_link to base_sensorring -->
