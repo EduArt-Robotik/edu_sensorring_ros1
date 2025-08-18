@@ -103,19 +103,25 @@ docker ps
 # Ros interface of the node
 
 ## 1. Overview
-This is a screenshot of the `rqt_graph` while the edu_sensorring_ros1 node is running. In the example the sensor board with the index 0 has a thermal sensor that publishes thermal measurements. Note that the default launchfile also includes a static transform publisher that defines a reference frame for the Sensorring measurements.
+This is a screenshot of the `rqt_graph` while the edu_sensorring_ros1 node is running. In the example the sensor board 0 has a ToF and a thermal sensor, the boards 1 and 2 only have ToF sensors. The Node publishes one point cloud per tof sensor and two combined point clouds with the measurements from all sensors. The first combined point cloud includes the raw points from all sensors, and the second one includes the transformed points in a common coordinate frame. The default launchfile also includes a static transform publisher that defines a reference frame for the Sensorring measurements.
 
 <img src="doc/images/rqt_graph.png" width="600"/>
 
 ## 2. Publisher
 
-### /sensors/tof_sensors/pcl_raw
-There is one publisher that publishes the point cloud data from all Time-of-Flight sensors of the Sensorring. The message type is a [`sensor_msgs/msg/PointCloud2`](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/PointCloud2.html). There is currently no mechanism to publish the individual measurements of each sensor.
+### /sensors/tof_sensors/pcl_individual/sensor_*
+There is one publisher per sensor board that publishes the point cloud data from its ToF sensor in the sensor coordinate frame. The message type is a [`sensor_msgs/msg/PointCloud2`](https://docs.ros2.org/foxy/api/sensor_msgs/msg/PointCloud2.html). The individual pxl publishers can be used as input for a voxel layer for autonomous navigation.
 
-### /sensors/thermal_sensor_\<idx\>/falsecolor
+### /sensors/tof_sensors/pcl_raw
+There is one publisher that publishes the point cloud data from all Time-of-Flight sensors of the Sensorring. The message type is a [`sensor_msgs/msg/PointCloud2`](https://docs.ros2.org/foxy/api/sensor_msgs/msg/PointCloud2.html). The combined measurements are **not** transformed into a common coordinate system. The points from the individual sensors can be distinguished by the PointField `sensor_idx` in the point cloud message.
+
+### /sensors/tof_sensors/pcl_transformed
+There is one publisher that publishes the point cloud data from all Time-of-Flight sensors of the Sensorring. The message type is a [`sensor_msgs/msg/PointCloud2`](https://docs.ros2.org/foxy/api/sensor_msgs/msg/PointCloud2.html). The combined measurements are transformed into a common coordinate system. The points from the individual sensors can be distinguished by the PointField `sensor_idx` in the point cloud message.
+
+### /sensors/thermal_sensor_*>/falsecolor
 There is one publisher for each sensor that publishes a falsecolor image of the thermal measurement. The message type is [`sensor_msgs/msg/Image`](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Image.html).
 
-### /sensors/thermal_sensor_\<idx\>/grayscale
+### /sensors/thermal_sensor_*>/grayscale
 There is one publisher for each thermal sensor that publishes a grayscale image of the thermal measurement. The message type is [`sensor_msgs/msg/Image`](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Image.html).
 
 ## 3. Subscriber
