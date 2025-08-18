@@ -118,9 +118,8 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
     }
 
     // Send static transforms for each sensor
-    tf2_ros::StaticTransformBroadcaster tf_broadcaster;
-
     i = 0;
+    tf2_ros::StaticTransformBroadcaster tf_broadcaster;
     for (const auto& sensor_bus : _manager->getParams().ring_params.bus_param_vec) {
         for (const auto& sensor_board : sensor_bus.board_param_vec) {
             geometry_msgs::TransformStamped t;
@@ -143,6 +142,12 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
             t.transform.rotation.w = q.w();
 
             tf_broadcaster.sendTransform(t);
+
+			// prepare publisher for individual sensor pointclouds
+			pc2_msg.header.frame_id = t.child_frame_id;
+			_pc2_msg_individual_vec.push_back(pc2_msg);
+			_pointcloud_pub_individual_vec.push_back(_nh.advertise<sensor_msgs::PointCloud2>("/sensors/tof_sensors/pcl_individual/sensor_" + std::to_string(i), 1));
+            
             i++;
         }
     }
@@ -197,23 +202,45 @@ bool SensorRingProxy::isShutdown() {
 void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasurement> measurement_vec){
 	if(!measurement_vec.empty()){
 
+        int idx = 0;
+		auto now = ros::Time::now();
+
         std::size_t point_count = 0;
 		for(const auto& measurement : measurement_vec){
 			point_count += measurement.point_cloud.size();
+
+            // prepare individual pc2 messages
+			auto& msg           = _pc2_msg_individual_vec.at(idx);
+			msg.header.stamp	= now;
+			msg.width			= measurement.point_cloud.size();
+			msg.row_step		= msg.width * msg.point_step;
+			msg.data.resize(msg.row_step);
+			idx++;
 		}
 
-        _pc2_msg_raw.header.stamp   = ros::Time::now();
+        // prepare combined pc2 message
+        _pc2_msg_raw.header.stamp   = now;
         _pc2_msg_raw.width          = point_count;
         _pc2_msg_raw.row_step       = _pc2_msg_raw.width * _pc2_msg_raw.point_step;
         _pc2_msg_raw.data.resize(_pc2_msg_raw.row_step);
 
 		auto data_ptr = reinterpret_cast<measurement::PointData*>(_pc2_msg_raw.data.data());
 
+        idx = 0;
 		for(const auto& measurement : measurement_vec){
 			std::copy(measurement.point_cloud.begin(), measurement.point_cloud.end(), data_ptr);
 			data_ptr += measurement.point_cloud.size();
+
+
+			// prepare and publish individual measurement
+			auto& msg = _pc2_msg_individual_vec.at(idx);
+			auto data_ptr_individual = reinterpret_cast<measurement::PointData*>(msg.data.data());
+			std::copy(measurement.point_cloud.begin(), measurement.point_cloud.end(), data_ptr_individual);
+			_pointcloud_pub_individual_vec.at(idx).publish(msg);
+			idx++;
 		}
 
+        // publish combined measurement
         _pointcloud_pub_raw.publish(_pc2_msg_raw);
     }
 }

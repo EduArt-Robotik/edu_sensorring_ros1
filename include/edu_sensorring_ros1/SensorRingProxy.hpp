@@ -54,6 +54,9 @@ namespace sensorring {
         sensor_msgs::PointCloud2 _pc2_msg_transformed;
         ros::Publisher _pointcloud_pub_transformed;
 
+        std::vector<sensor_msgs::PointCloud2> _pc2_msg_individual_vec;
+        std::vector<ros::Publisher> _pointcloud_pub_individual_vec;
+
         std::vector<sensor_msgs::Image> _img_msg_vec;
         std::vector<ros::Publisher> _img_pub_vec;
 
