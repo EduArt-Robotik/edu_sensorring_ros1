@@ -18,7 +18,7 @@ USER $USER
 # get the sensorring library from github
 RUN mkdir -p /home/$USER/eduart_ws/ \
     && cd /home/$USER/eduart_ws \
-    && git clone --depth 1 --branch v1.0.0  https://github.com/EduArt-Robotik/edu_lib_sensorring.git \
+    && git clone --depth 1 --branch v2.0.0  https://github.com/EduArt-Robotik/edu_lib_sensorring.git \
     && cd edu_lib_sensorring\
     && sudo ./cmake/install_release.bash
 
