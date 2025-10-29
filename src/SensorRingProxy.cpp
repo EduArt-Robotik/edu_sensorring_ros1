@@ -11,21 +11,26 @@ namespace eduart{
 
 namespace sensorring {
 
-SensorRingProxy::SensorRingProxy(const std::string& node_name) 
-    : MeasurementObserver(), _shutdown(false), _nh(node_name) {
+SensorRingProxy::SensorRingProxy(const std::string& node_name) :
+_nh(node_name), MeasurementClient(), LoggerClient() {
+	logger::Logger::getInstance()->registerClient(this);
 }
 
-SensorRingProxy::~SensorRingProxy() {
+SensorRingProxy::~SensorRingProxy(){
+	if(_manager)
+		_manager->unregisterClient(this);
+	logger::Logger::getInstance()->unregisterClient(this);
 }
 
 ros::NodeHandle* SensorRingProxy::getNodeHandle(){
     return &_nh;
 }
 
-bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_name, light::LightMode initial_light_mode, std::uint8_t red, std::uint8_t green, std::uint8_t blue) {
+bool SensorRingProxy::run(std::unique_ptr<manager::MeasurementManager> manager, const std::string& tf_name, light::LightMode initial_light_mode, std::uint8_t red, std::uint8_t green, std::uint8_t blue) {
 
     // create MeasurementManager
-    _manager = std::make_unique<manager::MeasurementManager>(params, static_cast<MeasurementObserver*>(this));
+	_manager = std::move(manager);
+    _manager->registerClient(this);
     _manager->setLight(initial_light_mode, red, green, blue);
 
     // Prepare PointCloud2 message
@@ -130,15 +135,15 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
             t.header.frame_id = tf_name;
             t.child_frame_id = "sensor_" + std::to_string(i);
 
-            t.transform.translation.x = sensor_board.tof_params.translation.x();
-            t.transform.translation.y = sensor_board.tof_params.translation.y();
-            t.transform.translation.z = sensor_board.tof_params.translation.z();
+            t.transform.translation.x = sensor_board.translation.x();
+            t.transform.translation.y = sensor_board.translation.y();
+            t.transform.translation.z = sensor_board.translation.z();
 
             tf2::Quaternion q;
             q.setRPY(
-                sensor_board.tof_params.rotation.x() * M_PI / 180.0,
-                sensor_board.tof_params.rotation.y() * M_PI / 180.0,
-                sensor_board.tof_params.rotation.z() * M_PI / 180.0);
+                sensor_board.rotation.x() * M_PI / 180.0,
+                sensor_board.rotation.y() * M_PI / 180.0,
+                sensor_board.rotation.z() * M_PI / 180.0);
             t.transform.rotation.x = q.x();
             t.transform.rotation.y = q.y();
             t.transform.rotation.z = q.z();
@@ -162,13 +167,13 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
         _nh.getNamespace() + "/stopThermalCalibration", &SensorRingProxy::stopThermalCalibration, this);
 
     // Force first state update
-    onStateChange(_manager->getWorkerState());
+    onStateChange(_manager->getManagerState());
 
     bool success = _manager->startMeasuring();
 
     if (success) {
         ros::Rate loop_rate(10);
-        while (!_shutdown && ros::ok()) {
+        while (_manager->isMeasuring() && ros::ok()) {
             ros::spinOnce();
             loop_rate.sleep();
         }
@@ -179,27 +184,12 @@ bool SensorRingProxy::run(manager::ManagerParams params, const std::string& tf_n
     return static_cast<int>(success);
 }
 
-void SensorRingProxy::onStateChange(const manager::WorkerState state) {
-    switch (state) {
-        case manager::WorkerState::Initialized:
-            ROS_DEBUG("New MeasurementManager state: initialized");
-            break;
-        case manager::WorkerState::Running:
-            ROS_DEBUG("New MeasurementManager state: running");
-            break;
-        case manager::WorkerState::Shutdown:
-            ROS_INFO("New MeasurementManager state: shutdown");
-            _shutdown = true;
-            break;
-        case manager::WorkerState::Error:
-            ROS_ERROR("New MeasurementManager state: error");
-            _shutdown = true;
-            break;
-    }
-}
-
-bool SensorRingProxy::isShutdown() {
-    return _shutdown;
+void SensorRingProxy::onStateChange(const manager::ManagerState state) {
+    if(state < manager::ManagerState::Error){
+		ROS_DEBUG_STREAM("New MeasurementManager state: " << state);
+	}else{
+		ROS_ERROR_STREAM("New MeasurementManager state: " << state);
+	}
 }
 
 void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasurement> measurement_vec){
@@ -227,18 +217,16 @@ void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasuremen
         _pc2_msg_raw.row_step       = _pc2_msg_raw.width * _pc2_msg_raw.point_step;
         _pc2_msg_raw.data.resize(_pc2_msg_raw.row_step);
 
-		auto data_ptr = reinterpret_cast<measurement::PointData*>(_pc2_msg_raw.data.data());
-
-        idx = 0;
+		idx = 0;
+		std::uint8_t* data_ptr = _pc2_msg_raw.data.data();
 		for(const auto& measurement : measurement_vec){
-			std::copy(measurement.point_cloud.begin(), measurement.point_cloud.end(), data_ptr);
-			data_ptr += measurement.point_cloud.size();
-
+			// prepare combined measurement
+			data_ptr = packPointData(measurement, data_ptr);
 
 			// prepare and publish individual measurement
 			auto& msg = _pc2_msg_individual_vec.at(idx);
-			auto data_ptr_individual = reinterpret_cast<measurement::PointData*>(msg.data.data());
-			std::copy(measurement.point_cloud.begin(), measurement.point_cloud.end(), data_ptr_individual);
+			std::uint8_t* data_ptr_individual =  msg.data.data();
+			packPointData(measurement, data_ptr_individual);
 			_pointcloud_pub_individual_vec.at(idx).publish(msg);
 			idx++;
 		}
@@ -261,11 +249,9 @@ void SensorRingProxy::onTransformedTofMeasurement(std::vector<measurement::TofMe
         _pc2_msg_transformed.row_step       = _pc2_msg_transformed.width * _pc2_msg_transformed.point_step;
         _pc2_msg_transformed.data.resize(_pc2_msg_transformed.row_step );
 
-		auto data_ptr = reinterpret_cast<measurement::PointData*>(_pc2_msg_transformed.data.data());
-
+		std::uint8_t* data_ptr = _pc2_msg_transformed.data.data();
 		for(const auto& measurement : measurement_vec){
-			std::copy(measurement.point_cloud.begin(), measurement.point_cloud.end(), data_ptr);
-			data_ptr += measurement.point_cloud.size();
+			data_ptr = packPointData(measurement, data_ptr);
 		}
 
         _pointcloud_pub_transformed.publish(_pc2_msg_transformed);
@@ -327,6 +313,22 @@ bool SensorRingProxy::startThermalCalibration(edu_sensorring_ros1::StartThermalC
                                               edu_sensorring_ros1::StartThermalCalibration::Response& response) {
     response.output = _manager->startThermalCalibration(static_cast<std::size_t>(request.window));
     return true;
+}
+
+std::uint8_t* SensorRingProxy::packPointData(const measurement::TofMeasurement& src, std::uint8_t* dst)
+{
+    for (const auto& p : src.point_cloud) {
+        float* f = reinterpret_cast<float*>(dst);
+        f[0] = static_cast<float>(p.point.data[0]);
+        f[1] = static_cast<float>(p.point.data[1]);
+        f[2] = static_cast<float>(p.point.data[2]);
+        f[3] = static_cast<float>(p.raw_distance);
+        f[4] = static_cast<float>(p.sigma);
+        reinterpret_cast<int32_t*>(f + 5)[0] = p.user_idx;
+        dst += sizeof(measurement::PointData);
+	}
+
+	return dst;
 }
 
 }

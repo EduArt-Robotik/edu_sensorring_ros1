@@ -25,8 +25,10 @@ int main(int argc, char** argv) {
     int timeout_ms = 0;
     std::string param_namespace = "/pointcloud_sensor";
     nh->param(param_namespace + "/base_setup/timeout_ms", timeout_ms, 1000);
+    nh->param(param_namespace + "/base_setup/enable_brs", manager_params.enable_brs, true);
     nh->param(param_namespace + "/base_setup/tf_name", tf_name, std::string("base_sensorring"));
     nh->param(param_namespace + "/base_setup/print_topology", manager_params.print_topology, true);
+    nh->param(param_namespace + "/base_setup/enforce_topology", manager_params.enforce_topology, false);
     nh->param(param_namespace + "/base_setup/frequency_tof_hz", manager_params.frequency_tof_hz, 5.0);
     nh->param(param_namespace + "/base_setup/frequency_thermal_hz", manager_params.frequency_thermal_hz, 1.0);
     if(timeout_ms > 0){
@@ -84,11 +86,11 @@ int main(int argc, char** argv) {
         nh->param(param_namespace + interface_param_name + "/nr_of_sensors", nr_of_sensors, 1);
 
         if(interface_type_str == "socketcan"){
-			bus_params.type = com::DeviceType::SOCKETCAN;
+			bus_params.type = com::InterfaceType::SOCKETCAN;
 		}else if(interface_type_str == "usbtingo"){
-			bus_params.type = com::DeviceType::USBTINGO;
+			bus_params.type = com::InterfaceType::USBTINGO;
 		}else{
-			bus_params.type = com::DeviceType::UNDEFINED;
+			bus_params.type = com::InterfaceType::UNDEFINED;
 		}
 
         sensor::Orientation orientation         = sensor::Orientation::none;
@@ -98,9 +100,12 @@ int main(int argc, char** argv) {
         // Get parameters for every sensor on the current CAN interface
         interface_param_name += "/sensors";
         for (int j = 0; j < nr_of_sensors; j++) {
-            std::string sensor_param_name = "/sensor_" + std::to_string(j);
 
+            sensor::SensorBoardParams board_params;
+
+            // Get parameters for the current sensor board
             bool enable_tof, enable_thermal, enable_light;
+            std::string sensor_param_name = "/sensor_" + std::to_string(j);
             nh->param(param_namespace + interface_param_name + sensor_param_name + "/enable_tof", enable_tof, true);
             nh->param(param_namespace + interface_param_name + sensor_param_name + "/enable_thermal", enable_thermal, false);
             nh->param(param_namespace + interface_param_name + sensor_param_name + "/enable_light", enable_light, false);
@@ -108,27 +113,25 @@ int main(int argc, char** argv) {
             std::vector<double> rotation(3, 0.0), translation(3, 0.0);
             nh->param(param_namespace + interface_param_name + sensor_param_name + "/rotation", rotation, rotation);
             nh->param(param_namespace + interface_param_name + sensor_param_name + "/translation", translation, translation);
-
-			sensor::TofSensorParams tof_params;
-			tof_params.enable		= enable_tof;
-			tof_params.user_idx		= sensor_idx;
             
             if (rotation.size() == 3) {
-                std::copy(rotation.begin(), rotation.end(), tof_params.rotation.data.begin());
+                std::copy(rotation.begin(), rotation.end(), board_params.rotation.data.begin());
             } else {
 				throw std::invalid_argument("Rotation vector of sensor " + std::to_string(j) + " on interface " + bus_params.interface_name + " has wrong length!");
             }
             if (translation.size() == 3) {
-                std::copy(translation.begin(), translation.end(), tof_params.translation.data.begin());
+                std::copy(translation.begin(), translation.end(), board_params.translation.data.begin());
             } else {
 				throw std::invalid_argument("Translation vector of sensor " + std::to_string(j) + " on interface " + bus_params.interface_name + " has wrong length!");
             }
 
+            sensor::TofSensorParams tof_params;
+			tof_params.enable		= enable_tof;
+			tof_params.user_idx		= sensor_idx;
+
             sensor::ThermalSensorParams thermal_params;
             thermal_params.enable               = enable_thermal;
             thermal_params.user_idx				= sensor_idx;
-            thermal_params.rotation             = tof_params.rotation;
-            thermal_params.translation          = tof_params.translation;
             thermal_params.orientation          = orientation;
             thermal_params.auto_min_max         = thermal_auto_min_max;
             thermal_params.use_eeprom_file      = thermal_use_eeprom_file;
@@ -143,7 +146,6 @@ int main(int argc, char** argv) {
             led_params.orientation = orientation;
 
             // Create sensor board
-            sensor::SensorBoardParams board_params;
             board_params.tof_params = tof_params;
             board_params.thermal_params = thermal_params;
             board_params.led_params = led_params;
@@ -156,7 +158,8 @@ int main(int argc, char** argv) {
     manager_params.ring_params = ring_params;
 
     // Run ROS node
-    bool success = measurement_node->run(manager_params, tf_name, light_initial_mode, light_color[0], light_color[1], light_color[2]);
+    auto measurement_manager = std::make_unique<manager::MeasurementManager>(manager_params);
+    bool success = measurement_node->run(std::move(measurement_manager), tf_name, light_initial_mode, light_color[0], light_color[1], light_color[2]);
     ros::shutdown();
 
     return success ? 0 : 1;

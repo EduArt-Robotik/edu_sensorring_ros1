@@ -3,9 +3,11 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
-#include <sensorring/MeasurementManager.hpp>
 #include <edu_sensorring_ros1/StartThermalCalibration.h>
 #include <edu_sensorring_ros1/StopThermalCalibration.h>
+
+#include <sensorring/Logger.hpp>
+#include <sensorring/MeasurementManager.hpp>
 
 #include <vector>
 #include <memory>
@@ -15,7 +17,7 @@ namespace eduart{
 
 namespace sensorring {
 
-    class SensorRingProxy : public manager::MeasurementObserver {
+    class SensorRingProxy : public manager::MeasurementClient, logger::LoggerClient {
     public:
         SensorRingProxy(const std::string& node_name);
 
@@ -24,11 +26,11 @@ namespace sensorring {
         ros::NodeHandle* getNodeHandle();
 
         //bool run(manager::ManagerParams params, const std::string& tf_name);
-        bool run(manager::ManagerParams params, const std::string& tf_name, light::LightMode initial_light_mode = light::LightMode::Off, std::uint8_t red = 0, std::uint8_t green = 0, std::uint8_t blue = 0);
+        bool run(std::unique_ptr<manager::MeasurementManager> manager, const std::string& tf_name, light::LightMode initial_light_mode = light::LightMode::Off, std::uint8_t red = 0, std::uint8_t green = 0, std::uint8_t blue = 0);
 
         bool isShutdown();
 
-        void onStateChange(const manager::WorkerState state) override;
+        void onStateChange(const manager::ManagerState state) override;
 
         void onRawTofMeasurement(std::vector<measurement::TofMeasurement> measurement_vec) override;
 
@@ -46,7 +48,6 @@ namespace sensorring {
         bool startThermalCalibration(edu_sensorring_ros1::StartThermalCalibration::Request& request,
                                      edu_sensorring_ros1::StartThermalCalibration::Response& response);
 
-        bool _shutdown;
         std::unique_ptr<manager::MeasurementManager> _manager;
 
         sensor_msgs::PointCloud2 _pc2_msg_raw;
