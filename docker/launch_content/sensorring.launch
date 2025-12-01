@@ -1,6 +1,6 @@
 <launch>
     <!-- Load Parameters -->
-    <rosparam file="edu_bot_sensorring_params.yaml" command="load" />
+    <rosparam file="sensorring_params.yaml" command="load" />
 
     <!-- SensorRing Node -->
     <node
