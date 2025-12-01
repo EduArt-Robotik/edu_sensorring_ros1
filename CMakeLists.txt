@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.11)
 
 #########################################################
 # build type (has to be done before project() call)
@@ -35,8 +35,25 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
 )
 
-# Sensorring is no catkin package. Adding it to "find_package(catkin REQUIRED COMPONENTS ..." above doesn't work.
-find_package(sensorring 1.0.0 REQUIRED)
+# Sensorring is no catkin package. Adding it to "find_package(catkin REQUIRED COMPONENTS ...)" above doesn't work.
+find_package(sensorring QUIET)
+if(NOT sensorring_found)
+  message(STATUS "Did not find edu_lib_sensorring. Cloning it from GitHub ...")
+
+  set(BUILD_SHARED_LIBS ON) # important
+  set(USE_USBTINGO ON)
+  set(BUILD_EXAMPLES OFF)
+  set(BUILD_UTILS OFF)
+
+  include(FetchContent)
+  FetchContent_Declare(
+    sensorring
+    URL https://github.com/EduArt-Robotik/edu_lib_sensorring/archive/refs/heads/master.zip
+  )
+
+  FetchContent_MakeAvailable(sensorring)
+  add_library(sensorring::sensorring ALIAS sensorring)
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

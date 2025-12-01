@@ -192,7 +192,7 @@ void SensorRingProxy::onStateChange(const manager::ManagerState state) {
 	}
 }
 
-void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasurement> measurement_vec){
+void SensorRingProxy::onRawTofMeasurement(const std::vector<measurement::TofMeasurement>& measurement_vec){
 	if(!measurement_vec.empty()){
 
         int idx = 0;
@@ -200,12 +200,12 @@ void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasuremen
 
         std::size_t point_count = 0;
 		for(const auto& measurement : measurement_vec){
-			point_count += measurement.point_cloud.size();
+			point_count += measurement.point_cloud.data.size();
 
             // prepare individual pc2 messages
 			auto& msg           = _pc2_msg_individual_vec.at(idx);
 			msg.header.stamp	= now;
-			msg.width			= measurement.point_cloud.size();
+			msg.width			= measurement.point_cloud.data.size();
 			msg.row_step		= msg.width * msg.point_step;
 			msg.data.resize(msg.row_step);
 			idx++;
@@ -236,12 +236,12 @@ void SensorRingProxy::onRawTofMeasurement(std::vector<measurement::TofMeasuremen
     }
 }
 
-void SensorRingProxy::onTransformedTofMeasurement(std::vector<measurement::TofMeasurement> measurement_vec){
+void SensorRingProxy::onTransformedTofMeasurement(const std::vector<measurement::TofMeasurement>& measurement_vec){
 	if(!measurement_vec.empty()){
 
         std::size_t point_count = 0;
 		for(const auto& measurement : measurement_vec){
-			point_count += measurement.point_cloud.size();
+			point_count += measurement.point_cloud.data.size();
 		}
 
         _pc2_msg_transformed.header.stamp   = ros::Time::now();
@@ -258,7 +258,7 @@ void SensorRingProxy::onTransformedTofMeasurement(std::vector<measurement::TofMe
     }
 }
 
-void SensorRingProxy::onOutputLog(const logger::LogVerbosity verbosity, const std::string msg){
+void SensorRingProxy::onOutputLog(const logger::LogVerbosity verbosity, const std::string& msg){
     switch (verbosity) {
         case logger::LogVerbosity::Debug:
             ROS_DEBUG("%s", msg.c_str());
@@ -275,7 +275,7 @@ void SensorRingProxy::onOutputLog(const logger::LogVerbosity verbosity, const st
     }
 }
 
-void SensorRingProxy::onThermalMeasurement(std::vector<measurement::ThermalMeasurement> measurement_vec) {
+void SensorRingProxy::onThermalMeasurement(const std::vector<measurement::ThermalMeasurement>& measurement_vec) {
     int idx = 0;
 	for(const auto& measurement : measurement_vec){
         // Prepare and publish grayscale image
@@ -317,7 +317,7 @@ bool SensorRingProxy::startThermalCalibration(edu_sensorring_ros1::StartThermalC
 
 std::uint8_t* SensorRingProxy::packPointData(const measurement::TofMeasurement& src, std::uint8_t* dst)
 {
-    for (const auto& p : src.point_cloud) {
+    for (const auto& p : src.point_cloud.data) {
         float* f = reinterpret_cast<float*>(dst);
         f[0] = static_cast<float>(p.point.data[0]);
         f[1] = static_cast<float>(p.point.data[1]);

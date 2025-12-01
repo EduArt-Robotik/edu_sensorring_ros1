@@ -141,14 +141,14 @@ int main(int argc, char** argv) {
             thermal_params.t_min_deg_c          = thermal_t_min;
             thermal_params.t_max_deg_c          = thermal_t_max;
 
-            sensor::LightParams led_params;
-            led_params.enable = enable_light;
-            led_params.orientation = orientation;
+            sensor::LightParams light_params;
+            light_params.enable = enable_light;
+            light_params.orientation = orientation;
 
             // Create sensor board
             board_params.tof_params = tof_params;
             board_params.thermal_params = thermal_params;
-            board_params.led_params = led_params;
+            board_params.light_params = light_params;
 
             bus_params.board_param_vec.push_back(board_params);
             sensor_idx++;
